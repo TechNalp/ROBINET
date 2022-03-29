@@ -1,6 +1,8 @@
 package exercice4;
 
- /*
+ import java.awt.Color;
+
+/*
 	(space setColor black)  
 	(robi setColor yellow) 
 	(space sleep 2000) 
@@ -38,9 +40,18 @@ package exercice4;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import exercice4.Exercice4_1_0.Command;
+import exercice4.Exercice4_1_0.Environment;
+import exercice4.Exercice4_1_0.Reference;
+import exercice4.Exercice4_1_0.SetColor;
+import exercice4.Exercice4_1_0.Sleep;
+import exercice4.Exercice4_1_0.Translate;
+import graphicLayer.GElement;
 import graphicLayer.GImage;
 import graphicLayer.GOval;
 import graphicLayer.GRect;
@@ -50,9 +61,41 @@ import stree.parser.SNode;
 import stree.parser.SParser;
 import tools.Tools;
 
+class DelElement implements Command {
 
-/*
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+			//setdim pas dans gelement cast +pour chacun element
+			GSpace space = (GSpace) receiver.receiver;
+		//	space.removeElement(receiver.ge);
+		
+		
+		return null;
+	}
+}
+class SetDim implements Command {
+
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+			//setdim pas dans gelement cast +pour chacun element
+			GElement elementtmp = (GElement) receiver.receiver;
+			if(elementtmp instanceof GRect) {
+				GRect element=(GRect) elementtmp;
+			element.setDimension(new Dimension(
+					
+					Integer.parseInt(method.get(2).contents()),
+					Integer.parseInt(method.get(3).contents())
+					));
+			}
+		
+		
+		return null;
+	}
+}
+
+
 class NewElement implements Command {
+
 	public Reference run(Reference reference, SNode method) {
 		try {
 			@SuppressWarnings("unchecked")
@@ -62,14 +105,13 @@ class NewElement implements Command {
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("setDim", new SetDim());
 			return ref;
-		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException e) {
-			e.printStackTrace();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 		return null;
 	}
 }
-*/
+
 
 public class Exercice4_2_0 {
 	// Une seule variable d'instance
@@ -88,13 +130,13 @@ public class Exercice4_2_0 {
 		spaceRef.addCommand("setColor", new SetColor());
 		spaceRef.addCommand("sleep", new Sleep());
 
-		spaceRef.addCommand("add", new AddElement());
-		spaceRef.addCommand("del", new DelElement());
+	//	spaceRef.addCommand("add", new AddElement());
+	//	spaceRef.addCommand("del", new DelElement());
 		
 		rectClassRef.addCommand("new", new NewElement());
 		ovalClassRef.addCommand("new", new NewElement());
-		imageClassRef.addCommand("new", new NewImage());
-		stringClassRef.addCommand("new", new NewString());
+	//	imageClassRef.addCommand("new", new NewImage());
+	//	stringClassRef.addCommand("new", new NewString());
 
 		environment.addReference("space", spaceRef);
 		environment.addReference("rect.class", rectClassRef);
@@ -128,7 +170,29 @@ public class Exercice4_2_0 {
 			}
 		}
 	}
-
+	//class enfouie
+	class Interpreter {
+		 void compute(Environment env,SNode method) {
+			 //demander addref bon ou alors rename de la cle
+			if(method.get(1).contents().equals("add")) {
+				Command cmd=new NewElement();
+				//recupere la reference de l'espace
+				GSpace sp=(GSpace)env.getReferenceByName(method.get(0).contents()).receiver;
+				//reference vers le nouveau element
+				SNode n2=method.get(3);
+				Reference r=cmd.run(env.getReferenceByName(n2.get(0).contents()),method);
+				env.addReference(method.get(2).contents(),r);
+				sp.addElement((GElement)r.receiver);
+				sp.repaint();
+			}else {
+			
+				env.getReferenceByName(method.get(0).contents()).run(method);
+				
+			}
+			
+			
+		}
+	}
 	public static void main(String[] args) {
 		new Exercice4_2_0();
 	}
