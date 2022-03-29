@@ -2,6 +2,7 @@ package exercice3;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -58,6 +59,55 @@ public class Exercice3_0 {
 	}
 
 	Command getCommandFromExpr(SNode expr) {
+		SNode objet = expr.get(0);
+		SNode fonction = expr.get(1);
+		
+		if(objet.contents().compareTo("space") == 0) {
+			if(fonction.contents().compareTo("setColor") == 0) {
+				try {
+					SNode parametre = expr.get(2);
+					
+					SpaceChangeColor c = new SpaceChangeColor((Color)(Color.class.getDeclaredField(parametre.contents()).get(null)));
+					
+					return c;
+				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+						| SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else {
+				SNode parametre = expr.get(2);
+				
+				SpaceSleep s = new SpaceSleep(Integer.parseInt(parametre.contents()));
+				
+				return s;
+			}
+		}
+		else {
+			if(fonction.contents().compareTo("setColor") == 0) {
+				try {
+					SNode parametre = expr.get(2);
+					
+					RobiChangeColor c = new RobiChangeColor((Color)(Color.class.getDeclaredField(parametre.contents()).get(null)));
+					
+					return c;
+				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
+						| SecurityException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else {
+				SNode parametre1 = expr.get(2);
+				SNode parametre2 = expr.get(3);
+				
+				RobiTranslate t = new RobiTranslate(Integer.parseInt(parametre1.contents()), Integer.parseInt(parametre2.contents()));
+				
+				return t;
+			}
+		}
+		
 		return null;
 	}
 
@@ -78,7 +128,55 @@ public class Exercice3_0 {
 
 		@Override
 		public void run() {
-			space.setColor(newColor);
+			space.setColor(this.newColor);
+		}
+
+	}
+	
+	public class SpaceSleep implements Command {
+		int newSleep;
+		
+		public SpaceSleep(int newSleep) {
+			this.newSleep = newSleep;
+		}
+		
+		@Override
+		public void run() {
+			try {
+				Thread.sleep(this.newSleep);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	public class RobiChangeColor implements Command {
+		Color newColor;
+
+		public RobiChangeColor(Color newColor) {
+			this.newColor = newColor;
+		}
+
+		@Override
+		public void run() {
+			robi.setColor(this.newColor);
+		}
+
+	}
+	
+	public class RobiTranslate implements Command {
+		int newX;
+		int newY;
+
+		public RobiTranslate(int newX, int newY) {
+			this.newX = newX;
+			this.newY = newY;
+		}
+
+		@Override
+		public void run() {
+			robi.translate(new Point(this.newX, this.newY));
 		}
 
 	}
