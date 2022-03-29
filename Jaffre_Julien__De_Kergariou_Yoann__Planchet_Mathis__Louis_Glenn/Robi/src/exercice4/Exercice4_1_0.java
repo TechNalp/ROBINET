@@ -162,7 +162,7 @@ public class Exercice4_1_0 {
 
 				e.printStackTrace();
 			}
-			return receiver;
+			return null;
 		}
 		
 	}
@@ -176,7 +176,7 @@ public class Exercice4_1_0 {
 			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 				e.printStackTrace();
 			}
-			return receiver;
+			return null;
 		}
 	}
 	
@@ -190,7 +190,7 @@ public class Exercice4_1_0 {
 				} catch (NumberFormatException | InterruptedException e) {
 					e.printStackTrace();
 				}
-			return receiver;
+			return null;
 		}
 	}
 	
@@ -200,7 +200,7 @@ public class Exercice4_1_0 {
 			int dx = Integer.valueOf(method.get(2).contents());
 			int dy = Integer.valueOf(method.get(3).contents());
 			((GRect)receiver.receiver).translate(new Point(dx,dy));
-			return receiver;
+			return null;
 		}
 	}
 	
