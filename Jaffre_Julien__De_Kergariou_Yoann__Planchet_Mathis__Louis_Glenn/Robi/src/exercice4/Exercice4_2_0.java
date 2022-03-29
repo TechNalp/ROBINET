@@ -1,6 +1,8 @@
 package exercice4;
 
- /*
+ import java.awt.Color;
+
+/*
 	(space setColor black)  
 	(robi setColor yellow) 
 	(space sleep 2000) 
@@ -37,10 +39,15 @@ package exercice4;
 
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
+import graphicLayer.GBounded;
+import graphicLayer.GElement;
 import graphicLayer.GImage;
 import graphicLayer.GOval;
 import graphicLayer.GRect;
@@ -51,7 +58,7 @@ import stree.parser.SParser;
 import tools.Tools;
 
 
-/*
+
 class NewElement implements Command {
 	public Reference run(Reference reference, SNode method) {
 		try {
@@ -69,7 +76,7 @@ class NewElement implements Command {
 		return null;
 	}
 }
-*/
+
 
 public class Exercice4_2_0 {
 	// Une seule variable d'instance
@@ -132,5 +139,108 @@ public class Exercice4_2_0 {
 	public static void main(String[] args) {
 		new Exercice4_2_0();
 	}
+	
+	public class Interpreter{
+		public void compute(Environment env, SNode method) {
+			
+		}
+		
+	}
+	
+	
+	
+}
 
+
+
+
+
+interface Command {
+	abstract public Reference run(Reference receiver, SNode method);
+}
+
+class Reference{
+	Object receiver;
+	Map<String, Command> primitives;
+	
+	public Reference(Object receiver) {
+		this.receiver = receiver;
+		primitives = new HashMap<String,Command>();
+	}
+	
+	public Object getReceiver() {
+		return this.receiver;
+	}
+	
+	public Command getCommandByName(String selector) {
+		return this.primitives.get(selector);
+	}
+	
+	public void addCommand(String selector,Command primitive) {
+		if(!this.primitives.containsKey(selector)) {
+			this.primitives.put(selector, primitive);
+		}
+	}
+	
+	public Reference run(SNode method) {
+		return this.getCommandByName(method.get(1).contents()).run(this, method);
+		
+	}
+	
+}
+
+class Environment{
+	HashMap<String,Reference> variables;
+	
+	public Environment(){
+		this.variables = new HashMap<String,Reference>();
+	}
+	
+	public void addReference(String name, Reference ref) {
+		if(!this.variables.containsKey(name)) {
+			this.variables.put(name, ref);
+		}
+	}
+	
+	public Reference getReferenceByName(String name) {
+		return this.variables.get(name);
+	}
+	
+}
+
+
+
+class SetColor implements Command{
+	
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		try {
+			((GElement)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
+		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+}
+
+
+class Translate implements Command{
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		int dx = Integer.valueOf(method.get(2).contents());
+		int dy = Integer.valueOf(method.get(3).contents());
+		((GElement)receiver.getReceiver()).translate(new Point(dx,dy));
+		return null;
+	}
+}
+
+class setDim implements Command{
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		int width = Integer.valueOf(method.get(2).contents());
+		int height = Integer.valueOf(method.get(3).contents());
+		((GBounded)(receiver.getReceiver())).setDimension(new Dimension(width,height));
+		return null;
+	}
+	
 }
