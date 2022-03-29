@@ -2,7 +2,9 @@ package exercice3;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Iterator;
 import java.util.List;
 
@@ -58,6 +60,40 @@ public class Exercice3_0 {
 	}
 
 	Command getCommandFromExpr(SNode expr) {
+		
+		//space change couleur
+		if(expr.get(0).contents().equals("space")&& expr.get(1).contents().equals("setColor")) {
+			Color color;
+			try {
+			    Field field = Class.forName("java.awt.Color").getField(expr.get(2).contents());
+			    color = (Color)field.get(null);
+			    return new SpaceChangeColor(color);
+			} catch (Exception e) {
+			    return null; // Not defined
+			}
+			//space pause
+		}else if(expr.get(0).contents().equals("robi")&& expr.get(1).contents().equals("setColor")) {
+			Color color;
+			try {
+			    Field field = Class.forName("java.awt.Color").getField(expr.get(2).contents());
+			    color = (Color)field.get(null);
+			    return new RobiChangeColor(color);
+			} catch (Exception e) {
+			    return null; // Not defined
+			}
+		}else if(expr.get(0).contents().equals("space")&& expr.get(1).contents().equals("sleep")) {
+			//espace pause
+			//manque gestion exception not format number
+			return new SpaceSleep(Integer.parseInt(expr.get(2).contents()));
+		} else if(expr.get(0).contents().equals("robi")&& expr.get(1).contents().equals("translate")) {
+			//déplacement robot
+			//manque gestion exception not format number
+			return new RobiTranslate(new Point(Integer.parseInt(expr.get(2).contents()),
+					Integer.parseInt(expr.get(3).contents())
+					)	);
+		}
+				
+			//commande inconnue
 		return null;
 	}
 
@@ -68,7 +104,7 @@ public class Exercice3_0 {
 	public interface Command {
 		abstract public void run();
 	}
-
+	//classe enfouie space change couleur
 	public class SpaceChangeColor implements Command {
 		Color newColor;
 
@@ -82,4 +118,51 @@ public class Exercice3_0 {
 		}
 
 	}
+	//classe enfouie robot change couleur
+	public class RobiChangeColor implements Command {
+		Color newColor;
+
+		public RobiChangeColor(Color newColor) {
+			this.newColor = newColor;
+		}
+
+		@Override
+		public void run() {
+			robi.setColor(newColor);
+		}
+
+	}
+	//classe enfouie pause temp
+		public class SpaceSleep implements Command {
+			int timeSleep;
+			
+			public SpaceSleep(int newtimeSleep) {
+				this.timeSleep = newtimeSleep;
+			}
+
+			@Override
+			public void run() {
+				try {
+					Thread.sleep(timeSleep);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			}
+
+		}
+		//classe enfouie robi déplacement
+		public class RobiTranslate implements Command {
+			Point newPoint;
+
+			public RobiTranslate(Point newPoint) {
+				this.newPoint = newPoint;
+			}
+
+			@Override
+			public void run() {
+				robi.translate(newPoint);
+			}
+
+		}
+		
 }
