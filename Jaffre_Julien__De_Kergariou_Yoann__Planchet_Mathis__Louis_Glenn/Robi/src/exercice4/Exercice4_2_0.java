@@ -8,7 +8,7 @@ package exercice4;
 	(space sleep 2000) 
 	(space setColor white)  
 	(space sleep 1000) 	
-	(space add robi (GRect new))
+	(space add robi (rect.class new))
 	(robi setColor green)
 	(robi translate 100 50)
 	(space del robi)
@@ -20,7 +20,7 @@ package exercice4;
 	(space sleep 1000)
 	(robi translate -100 0)
 	(space sleep 1000)
-	(robi translate 0 -40) ) 
+	(robi translate 0 -40)
 	
 	
 (space add robi (rect.class new))
@@ -39,12 +39,18 @@ package exercice4;
 
 
 import java.awt.Dimension;
+import java.awt.Image;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import graphicLayer.GBounded;
 import graphicLayer.GElement;
@@ -53,6 +59,8 @@ import graphicLayer.GOval;
 import graphicLayer.GRect;
 import graphicLayer.GSpace;
 import graphicLayer.GString;
+import graphicLayer.GContainer;
+
 import stree.parser.SNode;
 import stree.parser.SParser;
 import tools.Tools;
@@ -77,6 +85,53 @@ class NewElement implements Command {
 	}
 }
 
+class NewImage implements Command{
+	public Reference run(Reference reference, SNode method) {
+		try {
+			BufferedImage rawImage = ImageIO.read(new File(method.get(2).contents()));
+			@SuppressWarnings("unchecked")
+			GImage i = ((Class<GImage>) reference.getReceiver()).getDeclaredConstructor(Image.class).newInstance(rawImage);
+			Reference ref = new Reference(i);
+			ref.addCommand("setColor", new SetColor());
+			ref.addCommand("translate", new Translate());
+			
+			return ref;
+			
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException | IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+}
+
+
+class NewString implements Command{
+
+	@Override
+	public Reference run(Reference reference, SNode method) {
+		try {
+			@SuppressWarnings("unchecked")
+			GString s = ((Class<GString>) reference.getReceiver()).getDeclaredConstructor().newInstance();
+			String str = method.get(2).contents();
+			if(str.startsWith("\"") && str.endsWith("\"")) {
+				str = str.substring(1,str.length()-1);
+			}
+			s.setString(str);
+			Reference ref = new Reference(s);
+			ref.addCommand("translate", new Translate());
+			ref.addCommand("setColor", new SetColor());
+			
+			return ref;
+			
+		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+}
 
 public class Exercice4_2_0 {
 	// Une seule variable d'instance
@@ -85,7 +140,7 @@ public class Exercice4_2_0 {
 	public Exercice4_2_0() {
 		GSpace space = new GSpace("Exercice 4", new Dimension(200, 100));
 		space.open();
-
+		
 		Reference spaceRef = new Reference(space);
 		Reference rectClassRef = new Reference(GRect.class);
 		Reference ovalClassRef = new Reference(GOval.class);
@@ -95,8 +150,8 @@ public class Exercice4_2_0 {
 		spaceRef.addCommand("setColor", new SetColor());
 		spaceRef.addCommand("sleep", new Sleep());
 
-		spaceRef.addCommand("add", new AddElement());
-		spaceRef.addCommand("del", new DelElement());
+		spaceRef.addCommand("add", new AddElement(environment));
+		spaceRef.addCommand("del", new DelElement(environment));
 		
 		rectClassRef.addCommand("new", new NewElement());
 		ovalClassRef.addCommand("new", new NewElement());
@@ -142,7 +197,11 @@ public class Exercice4_2_0 {
 	
 	public class Interpreter{
 		public void compute(Environment env, SNode method) {
-			
+			String receiverName = method.get(0).contents();
+			Reference receiver = env.getReferenceByName(receiverName);
+			if(receiver != null) {
+				receiver.run(method);
+			}
 		}
 		
 	}
@@ -196,26 +255,55 @@ class Environment{
 		this.variables = new HashMap<String,Reference>();
 	}
 	
-	public void addReference(String name, Reference ref) {
+	public boolean addReference(String name, Reference ref) {
 		if(!this.variables.containsKey(name)) {
 			this.variables.put(name, ref);
+			return true;
+		}else{
+			System.err.println("La référence "+name+" existe déjà");
+			return false;
 		}
 	}
 	
 	public Reference getReferenceByName(String name) {
-		return this.variables.get(name);
+		Reference ref = this.variables.get(name);
+		if(ref == null) {
+			System.err.println(name+" n'existe pas");
+		}
+		return ref;
+	}
+	
+	public void removeReference(String name) {
+		this.variables.remove(name);
 	}
 	
 }
 
 
+class Sleep implements Command{
+
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		try {
+			Thread.sleep(Integer.valueOf(method.get(2).contents()));
+		}catch(InterruptedException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+}
 
 class SetColor implements Command{
 	
 	@Override
 	public Reference run(Reference receiver, SNode method) {
 		try {
-			((GElement)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
+			if(receiver.getReceiver() instanceof GElement){
+				((GElement)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
+			}else {
+				((GSpace)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
+			}
 		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
 			e.printStackTrace();
 		}
@@ -234,13 +322,67 @@ class Translate implements Command{
 	}
 }
 
-class setDim implements Command{
+class SetDim implements Command{
 	@Override
 	public Reference run(Reference receiver, SNode method) {
 		int width = Integer.valueOf(method.get(2).contents());
 		int height = Integer.valueOf(method.get(3).contents());
-		((GBounded)(receiver.getReceiver())).setDimension(new Dimension(width,height));
+		((GBounded)(receiver.getReceiver())).setWidth(width);
+		((GBounded)(receiver.getReceiver())).setHeight(height);
 		return null;
 	}
 	
+}
+
+
+
+class AddElement implements Command{
+	Environment env;
+	public AddElement(Environment env) {
+		this.env = env;
+	}
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		String nameNewRef = method.get(2).contents();
+		SNode s2 = method.get(3);
+		
+		Reference classRef = this.env.getReferenceByName(s2.get(0).contents());
+		
+		Command cmd = classRef.getCommandByName(s2.get(1).contents());
+		
+		Reference newRef = cmd.run(classRef, method.get(3));
+		
+		if(env.addReference(nameNewRef, newRef)) {
+			((GContainer)(receiver.getReceiver())).addElement((GElement)newRef.getReceiver());
+			((GContainer)receiver.getReceiver()).repaint();
+		}
+		
+		return newRef;
+	}
+	
+}
+
+class DelElement implements Command{
+	
+	Environment env;
+	
+	public DelElement(Environment env) {
+		this.env = env;
+	}
+
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		String nameRefToDel = method.get(2).contents();
+		
+		Reference ref = this.env.getReferenceByName(nameRefToDel);
+		if(ref == null) {
+			return null;
+		}
+		((GContainer)(receiver.getReceiver())).removeElement((GElement)ref.getReceiver());
+		((GContainer)(receiver.getReceiver())).repaint();
+		
+		this.env.removeReference(nameRefToDel);
+		
+		return null;
+	}
 }
