@@ -9,7 +9,7 @@ import java.awt.Point;
 public class Exercice1_0 {
 	GSpace space = new GSpace("Exercice 1", new Dimension(200, 150));
 	GRect robi = new GRect();
-	int speed = 10;
+	int speed = 20;
 	
 	public Exercice1_0() {
 		space.addElement(robi);
@@ -52,8 +52,12 @@ public class Exercice1_0 {
 			}
 			//Déplacement vers le bord gauche
 			while(robi.getX()!=0) {
-				
 				robi.translate(new Point(-1,0));
+				
+				if(robi.getX()+robi.getWidth()>space.getWidth()) {
+					robi.translate(new Point(space.getWidth()-(robi.getX()+robi.getWidth()),0));
+				}
+				
 				//Gestion du redimensionnement verticale
 				if(robi.getY()!=space.getHeight()-(robi.getHeight())) {
 					robi.translate(new Point(0,(space.getHeight()-(robi.getHeight())-robi.getY())));
