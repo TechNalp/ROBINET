@@ -1,6 +1,6 @@
 package exercice5.examples;
 
-import exercice5.Exercice5;
+import exercice5.Exercice5_0;
 
 public class Example1 {
 	
@@ -13,7 +13,7 @@ public class Example1 {
 	
 	
 	public  void launch() {
-		Exercice5 exo = new Exercice5();
+		Exercice5_0 exo = new Exercice5_0();
 		exo.oneShot(script);
 	}
 	
