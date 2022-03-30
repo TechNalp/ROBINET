@@ -88,6 +88,8 @@ class NewString implements Command{
 			Reference ref = new Reference(s);
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("setColor", new SetColor());
+			ref.addCommand("add", new AddElement(Exercice5_0.environment));
+			ref.addCommand("del", new DelElement(Exercice5_0.environment));
 			
 			return ref;
 			
