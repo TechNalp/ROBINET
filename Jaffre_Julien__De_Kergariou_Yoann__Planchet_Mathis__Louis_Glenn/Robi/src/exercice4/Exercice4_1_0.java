@@ -1,5 +1,7 @@
 package exercice4;
 
+import java.awt.Color;
+
 // 
 //	(space setColor black)  
 //	(robi setColor yellow) 
@@ -18,12 +20,14 @@ package exercice4;
 //
 
 import java.awt.Dimension;
+import java.awt.Point;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import graphicLayer.GElement;
 import graphicLayer.GRect;
 import graphicLayer.GSpace;
 import stree.parser.SNode;
@@ -44,6 +48,12 @@ public class Exercice4_1_0 {
 
 		Reference spaceRef = new Reference(space);
 		Reference robiRef = new Reference(robi);
+		
+		spaceRef.addCommand("setColor", new SpaceChangeColor());
+		spaceRef.addCommand("sleep", new SpaceSleep());
+		
+		robiRef.addCommand("setColor", new RobiChangeColor());
+		robiRef.addCommand("translate", new RobiTranslate());
 
 		// Initialisation des references : on leur ajoute les primitives qu'elles
 		// comprenent
@@ -104,6 +114,69 @@ public class Exercice4_1_0 {
 		abstract public Reference run(Reference receiver, SNode method);
 	}
 	
+	public class SpaceChangeColor implements Command {
+		@Override
+		public Reference run(Reference receiver, SNode method) {
+			SNode param = method.get(2);
+			
+			try {
+				((GSpace)receiver.receiver).setColor((Color)(Color.class.getDeclaredField(param.contents()).get(null)));
+			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return receiver;
+		}
+	}
+	
+	public class SpaceSleep implements Command {
+		@Override
+		public Reference run(Reference receiver, SNode method) {
+			SNode param = method.get(2);
+			
+			try {
+				Thread.sleep(Integer.parseInt(param.contents()));
+			} catch (NumberFormatException | InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return receiver;
+		}
+		
+		
+	}
+	
+	public class RobiChangeColor implements Command {
+		@Override
+		public Reference run(Reference receiver, SNode method) {
+			SNode param = method.get(2);
+			
+			try {
+				((GRect)receiver.receiver).setColor((Color)(Color.class.getDeclaredField(param.contents()).get(null)));
+			} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			return receiver;
+		}
+	}
+	
+	public class RobiTranslate implements Command {
+		@Override
+		public Reference run(Reference receiver, SNode method) {
+			SNode param1 = method.get(2);
+			SNode param2 = method.get(3);
+			
+			((GRect)receiver.receiver).translate(new Point(Integer.parseInt(param1.contents()), Integer.parseInt(param2.contents())));
+			
+			return null;
+		}
+
+	}
+	
 	public class Reference {
 		Object receiver;
 		Map<String, Command> primitives;
@@ -122,7 +195,14 @@ public class Exercice4_1_0 {
 		}
 		
 		Reference run(SNode methode) {
-			return null;
+			SNode fonc = methode.get(1);
+			Command com;
+			
+			com = this.primitives.get(fonc.contents());
+			
+			com.run(this, methode);
+			
+			return this;
 		}
 	}
 	
