@@ -19,8 +19,10 @@ package exercice4;
 
 import java.awt.Dimension;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import graphicLayer.GRect;
 import graphicLayer.GSpace;
@@ -92,5 +94,51 @@ public class Exercice4_1_0 {
 	public static void main(String[] args) {
 		new Exercice4_1_0();
 	}
-
+	
+	public interface Command {
+		// le receiver est l'objet qui va executer method
+		// method est la s-expression resultat de la compilation
+		// d u code source a executer
+		// exemple de code source : "(space setColor black)"
+		
+		abstract public Reference run(Reference receiver, SNode method);
+	}
+	
+	public class Reference {
+		Object receiver;
+		Map<String, Command> primitives;
+		
+		public Reference(Object receiver) {
+			this.receiver = receiver;
+			primitives = new HashMap<String, Command>();
+		}
+		
+		Command getCommandByName(String selector) {
+			return this.primitives.get(selector);
+		}
+		
+		void addCommand(String selector, Command primitive) {
+			this.primitives.putIfAbsent(selector, primitive);
+		}
+		
+		Reference run(SNode methode) {
+			return null;
+		}
+	}
+	
+	public class Environment {
+		HashMap<String, Reference> variables;
+		
+		public Environment() {
+			variables = new HashMap<String, Reference>();
+		}
+		
+		void addReference(String name, Reference nameRef) {
+			this.variables.putIfAbsent(name, nameRef);
+		}
+		
+		Reference getReferenceByName(String name) {
+			return this.variables.get(name);
+		}
+	}
 }
