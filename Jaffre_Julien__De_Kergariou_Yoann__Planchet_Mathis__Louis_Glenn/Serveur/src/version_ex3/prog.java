@@ -7,7 +7,7 @@ import java.net.Socket;
 public class prog {
 	
 	public static void main(String[] args){
-		System.out.println("Le Serveur FTP");
+		System.out.println("Le Serveur ROBI");
 		boolean r=true;
 	
 			ServerSocket serveurFTP;
