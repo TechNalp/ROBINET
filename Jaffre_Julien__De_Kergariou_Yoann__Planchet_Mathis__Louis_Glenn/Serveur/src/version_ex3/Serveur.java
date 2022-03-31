@@ -18,68 +18,60 @@ import stree.parser.SNode;
 import stree.parser.SParser;
 import stree.parser.SPrinter;
 
-public class Serveur implements Runnable{
+public class Serveur implements Runnable {
 	GSpace space = new GSpace("Serveur", new Dimension(200, 100));
 	GRect robi = new GRect();
 	static String script = "";
 	private Socket sock;
 	BufferedReader br;
 	PrintStream ps;
-	String log="";
+	Thread sc=null;
 	public Serveur(Socket sock) {
 		this.sock=sock;
-			
-	}
-	
 
-	public void run() {
-		
+	}
+
+
+	public void run(){
+
 		space.addElement(robi);
 		space.open();
 		try {
 			br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-		    ps = new PrintStream(sock.getOutputStream());
-			script = br.readLine();
-			
-			//ps.println("Script bien recu !");
+			ps = new PrintStream(sock.getOutputStream());
+			script = br.readLine();	
 			this.runScript();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
+		}catch(java.net.SocketException e) {System.out.print("partie");
+		}
+		catch (IOException e) {
 			e.printStackTrace();
 		}
-		
 
 
 	}
 
 	private void runScript() {
-		
+		ps.println("Script bien recu !");
 		SParser<SNode> parser = new SParser<>();
 		List<SNode> rootNodes = null;
 		try {
 			rootNodes = parser.parse(script);
 			Iterator<SNode> itor = rootNodes.iterator();
-			while (itor.hasNext() ) {
+			ps.println("script validide");
+
+			sc=new Thread(new ThEcouteStop(br,ps));
+			sc.start();
+			while (itor.hasNext()&& !sc.isInterrupted()) {
 				this.run2(itor.next());
 			}
-			System.out.print("yo");
-			ps.println("0 tout c'est bien passe");
+			if(sc.isInterrupted())
+				ps.println("fin\n");
 		} catch (stree.parser.SSyntaxError e) {
-			log+="S expression invalide";
-		
-		}catch(IOException e) {e.printStackTrace();}
-		
-		try {
-	
-			if(br.readLine().equals("oui"))ps.println(log);
-		
-		} catch (IOException e) {
-			
-			e.printStackTrace();
-		}
-		
+			ps.println("S expression invalide");
 
-		
+		}catch(IOException e) {e.printStackTrace();}
+
+
 	}
 
 	private void run2(SNode expr) {
@@ -87,40 +79,40 @@ public class Serveur implements Runnable{
 		try {
 			Command cmd = getCommandFromExpr(expr);
 
-				cmd.run();
-			}catch(Exception e) {
-			
-				expr.accept(printer);
-				
-				log+=printer.result()+" comande not found \n";
-			}
+			cmd.run();
+		}catch(Exception e) {
+
+			expr.accept(printer);
+
+			ps.println(printer.result()+" command or object not found");
+		}
 	}
 
 	Command getCommandFromExpr(SNode expr) {
 		if(expr == null || expr.isLeaf()) {
 			return null;
 		}
-		
+
 		String applyToStr = expr.get(0).contents();
 		String cmd = expr.get(1).contents();	
-		
+
 		if(applyToStr.equals("space")) {
 			if(cmd.equals("setColor")) {
 				try {
 					return new SpaceChangeColor((Color)(Color.class.getDeclaredField(expr.get(2).contents()).get(null)));
 				} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException
 						| SecurityException e) {
-				//	e.printStackTrace();
+					//	e.printStackTrace();
 					SPrinter printer = new SPrinter();
 					expr.accept(printer);
-					log+=printer.result()+" argument illgal \n";
+					//log+=printer.result()+" argument illgal \n";
 				}
 			}else if(cmd.equals("sleep")) {
 				return new Sleep(Integer.valueOf(expr.get(2).contents()));
 			}
-			
+
 		}
-		
+
 		if(applyToStr.equals("robi")) {
 			if(cmd.equals("setColor")) {
 				try {
@@ -131,19 +123,19 @@ public class Serveur implements Runnable{
 					//e.printStackTrace();
 					SPrinter printer = new SPrinter();
 					expr.accept(printer);
-					log+=printer.result()+" argument illgal \n";
+					ps.println(printer.result()+" argument illgal \n");
 				}
 			}else if(cmd.equals("translate")) {
 				if(expr.size()-2<2) {
 					return null;
 				}
-				
+
 				return new RobiTranslate(Integer.valueOf(expr.get(2).contents()),Integer.valueOf(expr.get(3).contents()));
 			}
 		}
-		
+
 		return null;
-		
+
 	}
 	public interface Command {
 		abstract public void run();

@@ -14,6 +14,6 @@
       <TextField fx:id="script" layoutX="31.0" layoutY="93.0" prefHeight="38.0" prefWidth="566.0" text="(space setColor black) (robi setColor yellow) (space sleep 10000)  (space setColor red)" />
       <Button fx:id="stop" layoutX="445.0" layoutY="59.0" mnemonicParsing="false" onAction="#stop_script" text="stop" />
       <TextArea fx:id="log" layoutX="35.0" layoutY="261.0" prefHeight="136.0" prefWidth="287.0" />
-      <Button fx:id="log_rec" layoutX="30.0" layoutY="226.0" mnemonicParsing="false" onAction="#log_recup" text="Button" />
+      <Button fx:id="log_rec" layoutX="30.0" layoutY="226.0" mnemonicParsing="false" text="Button" />
    </children>
 </AnchorPane>

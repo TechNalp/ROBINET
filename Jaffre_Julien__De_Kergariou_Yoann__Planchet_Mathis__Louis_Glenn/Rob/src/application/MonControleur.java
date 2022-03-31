@@ -22,7 +22,7 @@ public class MonControleur implements Initializable {
 	protected Socket sock;
 	protected PrintStream ps ;
 	protected BufferedReader  br ;
-	boolean lo=false;
+	boolean lancer_script=false;
 	@FXML
 	private TextField adresse ;
 	@FXML
@@ -41,19 +41,8 @@ public class MonControleur implements Initializable {
 	private TextArea log;
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {}
-	
-	@FXML
-	public void log_recup() {
-		if(lo==true) {
-			lo=false;
-			ps.println("oui");
-			try {
-				log.appendText(br.readLine());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+
+
 	@FXML
 	public void connection() {
 		String adr=adresse.getText();
@@ -61,48 +50,46 @@ public class MonControleur implements Initializable {
 		try {
 			this.sock=new Socket(adr,por);
 			br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-		//	BufferedWriter be =new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
-
-			 ps = new PrintStream(sock.getOutputStream());
-			 
+			//	BufferedWriter be =new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
+			ps = new PrintStream(sock.getOutputStream());
+			log.appendText("connexion réussite\n");
 		}catch(java.net.ConnectException e) {			
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText("**le serveur n'est pas allumé**");
-			alert.showAndWait();
+			log.appendText("**le serveur n'est pas allumé**\n");
 
 		}catch( java.net.SocketException e) {
-			Alert alert = new Alert(AlertType.ERROR);
-			alert.setContentText("** le serveur est déconnecté");
-			alert.showAndWait();
+			log.appendText("** le serveur est déconnecté\n");
 		}catch(Exception e) {
 			System.out.print(e);
 		}
 	}
 	public void envoie_script() {
+
 		Runnable task=()->{
-		String scrip=script.getText();
+			String scrip=script.getText();
 			ps.println(scrip);
-	
+			String logmes="";
 			try {
-				System.out.print(br.readLine());
-				lo=true;
-	
+				lancer_script=true;
+				do {
+					logmes=br.readLine();
+					log.appendText(logmes+"\n");
+				}
+				while(logmes.compareTo("fin")!=0);
+				lancer_script=false;
+				
+
 			}catch(java.net.SocketException e) {
+				lancer_script=false;
 				System.out.print("tache interrompue");
 			}catch(IOException e) {	e.printStackTrace();}
 		};
-		new Thread(task).start();
-		
+			if(lancer_script==false)
+				new Thread(task).start();
+
 	}
 	public void stop_script() {
-	
-		try {
-			sock.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
+		if(lancer_script=true)ps.println("stop");
+
 	}
-	
+
 }

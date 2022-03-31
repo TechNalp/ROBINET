@@ -59,7 +59,7 @@ public class Serveur {
 				this.run2(itor.next());
 			}
 			System.out.print("yo");
-			ps.println("0 tout c'est bien passe");
+			ps.println("fin");
 		} catch (stree.parser.SSyntaxError e) {
 			log+="S expression invalide";
 

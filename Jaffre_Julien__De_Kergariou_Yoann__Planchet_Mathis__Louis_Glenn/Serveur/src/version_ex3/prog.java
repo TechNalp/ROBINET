@@ -7,7 +7,7 @@ import java.net.Socket;
 public class prog {
 	
 	public static void main(String[] args){
-		System.out.println("Le Serveur ROBI");
+		System.out.println("Le Serveur FTP");
 		boolean r=true;
 	
 			ServerSocket serveurFTP;
@@ -18,6 +18,7 @@ public class prog {
 					Serveur sct = new Serveur(socket);
 					Thread th =new Thread(sct);
 					th.start();
+					
 				}
 				serveurFTP.close(); 
 			} catch (IOException e) {
