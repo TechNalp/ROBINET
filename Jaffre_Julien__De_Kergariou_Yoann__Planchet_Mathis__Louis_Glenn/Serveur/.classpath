@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="/2DGraphicCore"/>
 	<classpathentry kind="src" path="/SParser"/>
+	<classpathentry kind="src" path="/Robi"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
