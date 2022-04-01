@@ -25,7 +25,7 @@ public class Serveur implements Runnable {
 	private Socket sock;
 	BufferedReader br;
 	PrintStream ps;
-	Thread sc=null;
+	boolean stop;
 	public Serveur(Socket sock) {
 		this.sock=sock;
 
@@ -39,56 +39,62 @@ public class Serveur implements Runnable {
 		try {
 			br = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 			ps = new PrintStream(sock.getOutputStream());
-			script = br.readLine();	
-			this.runScript();
-		}catch(java.net.SocketException e) {System.out.print("partie");
+			boolean boucle=true;
+			while(boucle) {
+				try {
+					
+					script = br.readLine();	
+					ps.println("Script bien recu !");
+					stop=false;
+					SParser<SNode> parser = new SParser<>();
+					List<SNode> rootNodes = null;
+					rootNodes = parser.parse(script);
+					Iterator<SNode> itor = rootNodes.iterator();
+					ps.println("script validide");
+					Thread sc=new Thread(new ThEcouteStop(sock,Thread.currentThread()));
+					sc.start();
+					
+
+					while (itor.hasNext()&& !stop) {
+						this.run2(itor.next());
+						
+					}
+					if(!stop) {
+						ps.println("fin\n");
+						sc.interrupt();
+					}
+				} catch (stree.parser.SSyntaxError e) {
+					ps.println("S expression invalide");
+				}catch(java.net.SocketException e) {throw new java.net.SocketException();
+				}catch(IOException e) {System.out.print("lo");}//e.printStackTrace()}
+			}
 		}
 		catch (IOException e) {
+			System.out.println("afda");
 			e.printStackTrace();
 		}
 
 
 	}
 
-	private void runScript() {
-		ps.println("Script bien recu !");
-		SParser<SNode> parser = new SParser<>();
-		List<SNode> rootNodes = null;
-		try {
-			rootNodes = parser.parse(script);
-			Iterator<SNode> itor = rootNodes.iterator();
-			ps.println("script validide");
 
-			sc=new Thread(new ThEcouteStop(br,ps));
-			sc.start();
-			while (itor.hasNext()&& !sc.isInterrupted()) {
-				this.run2(itor.next());
-			}
-			if(sc.isInterrupted())
-				ps.println("fin\n");
-		} catch (stree.parser.SSyntaxError e) {
-			ps.println("S expression invalide");
-
-		}catch(IOException e) {e.printStackTrace();}
-
-
-	}
-
-	private void run2(SNode expr) {
+	private void run2(SNode expr)throws java.net.SocketException {
 		SPrinter printer = new SPrinter();
+		expr.accept(printer);
 		try {
 			Command cmd = getCommandFromExpr(expr);
-
 			cmd.run();
+			ps.println(printer.result()+" valide");
+		}catch(InterruptedException e){
+			stop=true;
+			ps.println(printer.result()+" Interrompue");
+			ps.println("interrompue");
 		}catch(Exception e) {
-
-			expr.accept(printer);
-
 			ps.println(printer.result()+" command or object not found");
 		}
 	}
 
-	Command getCommandFromExpr(SNode expr) {
+	Command getCommandFromExpr(SNode expr) throws InterruptedException{
 		if(expr == null || expr.isLeaf()) {
 			return null;
 		}
@@ -138,7 +144,7 @@ public class Serveur implements Runnable {
 
 	}
 	public interface Command {
-		abstract public void run();
+		abstract public void run() throws InterruptedException;
 	}
 
 	public class SpaceChangeColor implements Command {
@@ -179,14 +185,9 @@ public class Serveur implements Runnable {
 		}
 
 		@Override
-		public void run() {
-			try {
+		public void run()throws InterruptedException{
+		
 				Thread.sleep(this.timeToSleep);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
 		}
 
 	}

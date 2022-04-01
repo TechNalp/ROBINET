@@ -74,9 +74,15 @@ public class MonControleur implements Initializable {
 					logmes=br.readLine();
 					log.appendText(logmes+"\n");
 				}
-				while(logmes.compareTo("fin")!=0);
+				while(logmes.compareTo("fin")!=0&&logmes.compareTo("interrompue")!=0);
 				lancer_script=false;
-				
+				try {
+					Thread.sleep(2000);
+					log.clear();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+			
 
 			}catch(java.net.SocketException e) {
 				lancer_script=false;

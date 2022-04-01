@@ -2,34 +2,41 @@ package version_ex3;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 
 public class ThEcouteStop implements Runnable {
-	BufferedReader br;
-	PrintStream ps;
+	Socket  so;
+	 
 	Thread thread;
-	public ThEcouteStop(BufferedReader sock,PrintStream ps) {
-		this.br=sock;
-		this.ps=ps;
+	public ThEcouteStop(Socket sock,Thread th) {
+		this.so=sock;
+		this.thread=th;
 
 	}
 	@Override
 	public void run() {
-
-		try {
+		BufferedReader br;
 		
+		
+		
+		try {
+			Thread.sleep(500);
+			br = new BufferedReader(new InputStreamReader(so.getInputStream()));
+			Thread.yield();
 			String s=br.readLine();
-			
+			System.out.println("lol");
 			if(s.equals("stop")) {
-				ps.println("interrompue");
-				Thread.currentThread().interrupt();
+		//		ps.println("interrompue");
+				thread.interrupt();
 			}
+			Thread.sleep(0);
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}catch(InterruptedException e) {System.out.print("truc");}
 		
 	}
 

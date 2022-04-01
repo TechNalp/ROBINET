@@ -11,20 +11,24 @@ public class prog {
 		boolean r=true;
 	
 			ServerSocket serveurFTP;
-			try {
-				serveurFTP = new ServerSocket(8000);
-				while(r) {
-					Socket socket = serveurFTP.accept();
-					Serveur sct = new Serveur(socket);
-					Thread th =new Thread(sct);
-					th.start();
-					
+			
+				try {
+					serveurFTP = new ServerSocket(8000);
+					while(r) {
+						try {
+						Socket socket = serveurFTP.accept();
+						Serveur sct = new Serveur(socket);
+						Thread th =new Thread(sct);
+						th.start();
+						}catch(java.net.SocketException e) {System.out.println("bye");}
+					}
+					serveurFTP.close(); 
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				serveurFTP.close(); 
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+				
+			
 		
 		
 		
