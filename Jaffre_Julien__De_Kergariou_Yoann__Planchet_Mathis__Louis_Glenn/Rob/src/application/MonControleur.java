@@ -65,6 +65,7 @@ public class MonControleur implements Initializable {
 	public void envoie_script() {
 
 		Runnable task=()->{
+			System.out.print("lancer");
 			String scrip=script.getText();
 			ps.println(scrip);
 			String logmes="";
@@ -75,6 +76,8 @@ public class MonControleur implements Initializable {
 					log.appendText(logmes+"\n");
 				}
 				while(logmes.compareTo("fin")!=0&&logmes.compareTo("interrompue")!=0);
+				
+				if(logmes.equals("fin"))ps.println("");
 				lancer_script=false;
 				try {
 					Thread.sleep(2000);
@@ -91,7 +94,9 @@ public class MonControleur implements Initializable {
 		};
 			if(lancer_script==false)
 				new Thread(task).start();
-
+			else {
+				System.out.print("déja lancer_script");
+			}
 	}
 	public void stop_script() {
 		if(lancer_script=true)ps.println("stop");
