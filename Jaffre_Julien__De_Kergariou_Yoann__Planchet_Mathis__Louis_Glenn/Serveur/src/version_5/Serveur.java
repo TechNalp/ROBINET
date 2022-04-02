@@ -87,6 +87,7 @@ public class Serveur implements Runnable{
 		
 			}catch(stree.parser.SSyntaxError e) {
 				ps.println("S expression invalide");
+			}catch(java.net.SocketException e) {System.out.println("lo");break;
 			}catch(IOException e) {break;}
 		}
 		System.out.println("client partie");
