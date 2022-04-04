@@ -4,12 +4,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import graphicLayer.GBounded;
 import graphicLayer.GElement;
@@ -28,11 +30,13 @@ import graphicLayer.GRect;
 import graphicLayer.GSpace;
 import graphicLayer.GString;
 import graphicLayer.GContainer;
-import stree.parser.SDefaultNode;
 import stree.parser.SNode;
 import stree.parser.SParser;
 import stree.parser.SPrinter;
+import stree.parser.SSyntaxError;
 import tools.Tools;
+
+
 
 class NewElement implements Command {
 	public Reference run(Reference reference, SNode method) {
@@ -40,11 +44,14 @@ class NewElement implements Command {
 			@SuppressWarnings("unchecked")
 			GElement e = ((Class<GElement>) reference.getReceiver()).getDeclaredConstructor().newInstance();
 			Reference ref = new Reference(e);
+			
+			ref.setHisEnv(new Environment(null));
+			
 			ref.addCommand("setColor", new SetColor());
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("setDim", new SetDim());
-			ref.addCommand("add", new AddElement(Exercice6_0.environment));
-			ref.addCommand("del", new DelElement(Exercice6_0.environment));
+			ref.addCommand("add", new AddElement(ref.getHisEnv()));
+			ref.addCommand("del", new DelElement(ref.getHisEnv()));
 			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
@@ -63,10 +70,13 @@ class NewImage implements Command{
 			@SuppressWarnings("unchecked")
 			GImage i = ((Class<GImage>) reference.getReceiver()).getDeclaredConstructor(Image.class).newInstance(rawImage);
 			Reference ref = new Reference(i);
+			
+			ref.setHisEnv(new Environment(null));
+			
 			ref.addCommand("setColor", new SetColor());
 			ref.addCommand("translate", new Translate());
-			ref.addCommand("add", new AddElement(Exercice6_0.environment));
-			ref.addCommand("del", new DelElement(Exercice6_0.environment));
+			ref.addCommand("add", new AddElement(ref.getHisEnv()));
+			ref.addCommand("del", new DelElement(ref.getHisEnv()));
 			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
@@ -93,10 +103,11 @@ class NewString implements Command{
 			}
 			s.setString(str);
 			Reference ref = new Reference(s);
+			
+			ref.setHisEnv(new Environment(null));
+			
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("setColor", new SetColor());
-			ref.addCommand("add", new AddElement(Exercice6_0.environment));
-			ref.addCommand("del", new DelElement(Exercice6_0.environment));
 			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
@@ -116,11 +127,12 @@ class NewString implements Command{
 
 public class Exercice6_0 {
 	
-	static Environment environment = new Environment();
+	static Environment environment = new Environment(null);
 	
 	public Exercice6_0(){
 		GSpace space = new GSpace("Exercice 4", new Dimension(200, 100));
 		space.open();
+		
 		
 		Reference spaceRef = new Reference(space);
 		Reference rectClassRef = new Reference(GRect.class);
@@ -128,13 +140,15 @@ public class Exercice6_0 {
 		Reference imageClassRef = new Reference(GImage.class);
 		Reference stringClassRef = new Reference(GString.class);
 
+		spaceRef.setHisEnv(new Environment(Exercice6_0.environment));
+		
 		spaceRef.addCommand("setColor", new SetColor());
 		spaceRef.addCommand("sleep", new Sleep());
 		spaceRef.addCommand("setDim", new SetDim());
 		spaceRef.addCommand("addScript", new AddScript());
 
-		spaceRef.addCommand("add", new AddElement(environment));
-		spaceRef.addCommand("del", new DelElement(environment));
+		spaceRef.addCommand("add", new AddElement(spaceRef.getHisEnv()));
+		spaceRef.addCommand("del", new DelElement(spaceRef.getHisEnv()));
 		
 		rectClassRef.addCommand("new", new NewElement());
 		ovalClassRef.addCommand("new", new NewElement());
@@ -146,6 +160,7 @@ public class Exercice6_0 {
 		environment.addReference("Oval", ovalClassRef);
 		environment.addReference("Image", imageClassRef);
 		environment.addReference("Label", stringClassRef);
+		
 		
 		this.mainLoop();
 	}
@@ -165,6 +180,9 @@ public class Exercice6_0 {
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
+			}catch(SSyntaxError e) {
+				System.err.println("Erreur de parsing : "+e.getMessage());
+				continue;
 			}
 			// execution des s-expressions compilees
 			Iterator<SNode> itor = compiled.iterator();
@@ -216,10 +234,16 @@ public class Exercice6_0 {
 
 class Interpreter{
 	public void compute(Environment env, SNode method) {
+		if(method.size() <=0) {
+			System.err.println("Expression vide");
+			return;
+		}
 		String receiverName = method.get(0).contents();
 		Reference receiver = env.getReferenceByName(receiverName);
 		if(receiver != null) {
 			receiver.run(method);
+		}else {
+			System.err.println(receiverName + " est inconnu");
 		}
 	}
 	
@@ -316,11 +340,22 @@ class Reference{
 
 	Map<String, Script> scripts;
 	
+	Environment hisEnv;
+	
 	public Reference(Object receiver) {
 		this.receiver = receiver;
 		primitives = new HashMap<String,Command>();
 		scripts = new HashMap<String,Script>();
+		this.hisEnv = null;
 		
+	}
+	
+	public void setHisEnv(Environment env) {
+		this.hisEnv = env;
+	}
+	
+	public Environment getHisEnv() {
+		return this.hisEnv;
 	}
 	
 	public Object getReceiver() {
@@ -342,6 +377,10 @@ class Reference{
 	}
 	
 	public Reference run(SNode method) {
+		if(method.size()<2) {
+			System.err.println("Commande non indiquée");
+			return null;
+		}
 		Command cmd = this.getCommandByName(method.get(1).contents());
 		if(cmd != null) {
 			return cmd.run(this, method);
@@ -349,6 +388,7 @@ class Reference{
 			
 			Script sc = this.getScriptByName(method.get(1).contents());
 			if(sc == null) {
+				System.err.println(method.get(1).contents() +" ne correspond à aucune commande ou script");
 				return null;
 			}
 			List<String> paramsValue = new ArrayList<>();
@@ -376,8 +416,20 @@ class Reference{
 class Environment{
 	HashMap<String,Reference> variables;
 	
-	public Environment(){
+	Environment pere;
+	
+	
+	public Environment(Environment pere){
 		this.variables = new HashMap<String,Reference>();
+		this.pere = pere;
+	}
+	
+	public void setDadEnv(Environment env) {
+		this.pere = env;
+	}
+	
+	public Environment getDadEnv() {
+		return this.pere;
 	}
 	
 	public boolean addReference(String name, Reference ref) {
@@ -385,17 +437,33 @@ class Environment{
 			this.variables.put(name, ref);
 			return true;
 		}else{
-			System.err.println("La r�f�rence "+name+" existe d�j�");
+			System.err.println("La référence "+name+" existe déjà");
 			return false;
 		}
 	}
 	
 	public Reference getReferenceByName(String name) {
 		Reference ref = this.variables.get(name);
-		if(ref == null) {
-			System.err.println(name+" n'existe pas");
+		if(ref != null) {
+			return ref;
 		}
-		return ref;
+		if(!name.contains(".")) {
+			return null;
+		}
+		String[] pathElt = name.split("\\.");
+		
+		Environment currentEnv = this;
+		Reference currentRef = null;
+		for (String s : pathElt) {
+			currentRef = currentEnv.getReferenceByName(s);
+			if(currentRef == null) {
+				return null;
+			}
+			currentEnv = currentRef.getHisEnv();
+		}
+		
+		return currentRef;
+		
 	}
 	
 	public void removeReference(String name) {
@@ -427,10 +495,16 @@ class SetColor implements Command{
 			if(receiver.getReceiver() instanceof GElement){
 				((GElement)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
 			}else {
-				((GSpace)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
+				
+					((GSpace)(receiver.getReceiver())).setColor((Color)(Color.class.getDeclaredField(method.get(2).contents()).get(null)));
+				
+				
 			}
-		} catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+		} catch (IllegalArgumentException | IllegalAccessException | SecurityException e) {
 			e.printStackTrace();
+		}catch(NoSuchFieldException e) {
+			System.err.println(e.getMessage()+" n'est pas une couleur valide");
+			return null;
 		}
 		return null;
 	}
@@ -482,7 +556,7 @@ class AddElement implements Command{
 		String nameNewRef = method.get(2).contents();
 		SNode s2 = method.get(3);
 		
-		Reference classRef = this.env.getReferenceByName(s2.get(0).contents());
+		Reference classRef = Exercice6_0.environment.getReferenceByName(s2.get(0).contents());
 		
 		Command cmd = classRef.getCommandByName(s2.get(1).contents());
 		
@@ -492,9 +566,8 @@ class AddElement implements Command{
 			return null;
 		}
 		
-		nameNewRef = method.get(0).contents()+"."+nameNewRef;
-		
-		
+		newRef.getHisEnv().setDadEnv(env);
+			
 		
 		if(env.addReference(nameNewRef, newRef)) {
 			((GContainer)(receiver.getReceiver())).addElement((GElement)newRef.getReceiver());
@@ -519,10 +592,20 @@ class DelElement implements Command{
 		String nameRefToDel = method.get(2).contents();
 		
 		Reference ref = this.env.getReferenceByName(nameRefToDel);
+		Boolean useOfGlobalEnv = false;
+		
 		if(ref == null) {
-			return null;
+			ref = Exercice6_0.environment.getReferenceByName(nameRefToDel);
+			if(ref == null) {
+				System.err.println(nameRefToDel + "n'existe pas ou ne peut-être supprimé depuis cet élément");
+				return null;
+			}
+			useOfGlobalEnv = true;
 		}
 		
+		ref.getHisEnv().setDadEnv(null);
+		
+		ref.setHisEnv(null);
 		
 		
 		if(receiver.getReceiver() instanceof GContainer) {
@@ -530,18 +613,13 @@ class DelElement implements Command{
 			((GContainer)(receiver.getReceiver())).repaint();
 		}
 		
-		Set<String> toDelete = new HashSet<>();
-		for (String s : this.env.variables.keySet()) {
-			if(s.startsWith(nameRefToDel)) {
-				toDelete.add(s);
-			}
-		}
 		
-		for(String s : toDelete) {
-			this.env.removeReference(s);
+		if(!useOfGlobalEnv) {
+			this.env.removeReference(nameRefToDel);
+		}else {
+			String[] path = nameRefToDel.split("\\.");
+			this.env.removeReference(path[path.length-1]);
 		}
-		
-		toDelete.clear();
 		
 		return null;
 	}
