@@ -4,23 +4,25 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Point;
-import java.awt.Toolkit;
+
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
+
 import java.util.HashMap;
-import java.util.HashSet;
+
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
+
 
 import javax.imageio.ImageIO;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
+
+
+
 
 import graphicLayer.GBounded;
 import graphicLayer.GElement;
@@ -30,9 +32,10 @@ import graphicLayer.GRect;
 import graphicLayer.GSpace;
 import graphicLayer.GString;
 import graphicLayer.GContainer;
+import stree.parser.SDefaultNode;
 import stree.parser.SNode;
 import stree.parser.SParser;
-import stree.parser.SPrinter;
+
 import stree.parser.SSyntaxError;
 import tools.Tools;
 
@@ -52,6 +55,7 @@ class NewElement implements Command {
 			ref.addCommand("setDim", new SetDim());
 			ref.addCommand("add", new AddElement(ref.getHisEnv()));
 			ref.addCommand("del", new DelElement(ref.getHisEnv()));
+			
 			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
@@ -77,6 +81,7 @@ class NewImage implements Command{
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("add", new AddElement(ref.getHisEnv()));
 			ref.addCommand("del", new DelElement(ref.getHisEnv()));
+			
 			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
@@ -108,6 +113,7 @@ class NewString implements Command{
 			
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("setColor", new SetColor());
+			
 			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
@@ -145,10 +151,11 @@ public class Exercice6_0 {
 		spaceRef.addCommand("setColor", new SetColor());
 		spaceRef.addCommand("sleep", new Sleep());
 		spaceRef.addCommand("setDim", new SetDim());
-		spaceRef.addCommand("addScript", new AddScript());
 
 		spaceRef.addCommand("add", new AddElement(spaceRef.getHisEnv()));
 		spaceRef.addCommand("del", new DelElement(spaceRef.getHisEnv()));
+		
+		spaceRef.addCommand("addScript", new AddScript());
 		
 		rectClassRef.addCommand("new", new NewElement());
 		ovalClassRef.addCommand("new", new NewElement());
@@ -156,6 +163,7 @@ public class Exercice6_0 {
 		stringClassRef.addCommand("new", new NewString());
 
 		environment.addReference("space", spaceRef);
+		
 		environment.addReference("Rect", rectClassRef);
 		environment.addReference("Oval", ovalClassRef);
 		environment.addReference("Image", imageClassRef);
@@ -249,88 +257,13 @@ class Interpreter{
 	
 }
 
-class Script{
-	
-	String script = "";
-	LinkedHashMap<String,Integer> params;
-	
-	String self = "";
-	
-	int paramsNumber = 0;
-	
-	public Script(String self, List<SNode> script, List<String> params) {
-		
-		this.self = self;
-		
-		this.paramsNumber = 0;
-		
-		Iterator<SNode> itor = script.iterator();
-		
-		SPrinter printer = new SPrinter();
-		
-		while(itor.hasNext()) {
-			itor.next().accept(printer);
-		}
-		
-		this.script = printer.result().toString();
-		
-		if(params.size() > 0 && params != null) {
-			
-			this.params = new LinkedHashMap<>();
-			int i = 0;
-			
-			for(String s : params) {
-				this.params.put(s, i);
-				i++;
-			}
-			this.paramsNumber = params.size();
-			
-		}
-		
-	}
-	
-	
-	
-	public void executeScript(List<String> paramValue) {
-		System.err.println(paramValue.size());
-		if((paramValue.size() != this.paramsNumber) || (this.paramsNumber != 0 && paramValue == null) ) {
-			System.err.println("Nombre de parametre du script invalide");
-			return;
-		}
-		
-		
-		String copy = this.script;
-		
-		copy = copy.replaceAll("self", this.self);
-		
-		if(this.paramsNumber!=0) {
-			for(String param : this.params.keySet()) {
-				copy = copy.replaceAll("\\W"+param, " "+paramValue.get(this.params.get(param)));
-			}
-		}
-		
-		System.err.println(copy +" "+ this.paramsNumber);
-		
-		SParser<SNode> parser = new SParser<>();
-		
-		try {
-			for(SNode node : parser.parse(copy)) {
-				new Interpreter().compute(Exercice6_0.environment,node);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	
-	
-	
-}
+
 
 
 interface Command {
 	abstract public Reference run(Reference receiver, SNode method);
 }
+
 
 class Reference{
 
@@ -338,14 +271,12 @@ class Reference{
 	Object receiver;
 	Map<String, Command> primitives;
 
-	Map<String, Script> scripts;
 	
 	Environment hisEnv;
 	
 	public Reference(Object receiver) {
 		this.receiver = receiver;
 		primitives = new HashMap<String,Command>();
-		scripts = new HashMap<String,Script>();
 		this.hisEnv = null;
 		
 	}
@@ -372,9 +303,7 @@ class Reference{
 		}
 	}
 	
-	public Script getScriptByName(String name) {
-		return this.scripts.get(name);
-	}
+	
 	
 	public Reference run(SNode method) {
 		if(method.size()<2) {
@@ -385,31 +314,11 @@ class Reference{
 		if(cmd != null) {
 			return cmd.run(this, method);
 		}else {
-			
-			Script sc = this.getScriptByName(method.get(1).contents());
-			if(sc == null) {
-				System.err.println(method.get(1).contents() +" ne correspond à aucune commande ou script");
-				return null;
-			}
-			List<String> paramsValue = new ArrayList<>();
-			
-			System.err.println(sc.paramsNumber);
-			
-			for(int i=0; i<sc.paramsNumber;i++) {
-				paramsValue.add(method.get(i+2).contents());
-			}
-			sc.executeScript(paramsValue);
+			System.err.println(method.get(0).contents()+" ne contient aucune commande ou script avec le nom \""+method.get(1).contents()+"\"");
 			return null;
 		}
 	}
 	
-	public void addScript(String self, String scriptName,List<SNode>script, List<String> params) {
-		this.scripts.put(scriptName, new Script(self,script,params));
-	}
-	
-	public void executeScript(String scriptName, List<String> params) {
-		this.scripts.get(scriptName).executeScript(params);
-	}
 	
 }
 
@@ -472,6 +381,82 @@ class Environment{
 	
 }
 
+
+class Script implements Command{
+	SNode script;
+	String self;
+	
+	int paramsNumber = 0;
+	
+	public Script(String self, SNode script) {
+		this.script = script;
+		this.self = self;
+		this.paramsNumber = script.get(0).size()-1;
+	}
+	
+	public void copyTree(SNode node,SNode tree,LinkedHashMap<String,String> params) {
+		for(SNode nd : node.children()) {
+			if(nd.isLeaf()) {
+				SNode newNode = new SDefaultNode();
+				tree.addChild(newNode);
+				newNode.setParent(tree);
+				if(params.containsKey(nd.contents())) {
+					newNode.setContents(params.get(nd.contents()));
+				}else {
+					if(nd.contents().contains("self")) {
+						newNode.setContents(nd.contents().replaceAll("self", params.get("self")));
+					}else {
+						newNode.setContents(nd.contents());
+					}
+				}
+
+			}else {
+				SNode newNode = new SDefaultNode();
+				tree.addChild(newNode);
+				newNode.setParent(tree);
+				this.copyTree(nd,newNode,params);
+			}
+		}
+	}
+	
+	@Override
+	public Reference run(Reference receiver, SNode method) {
+		
+		if(method.size()-2 != this.paramsNumber) {
+			System.err.println("Nombre d'arguement invalide ("+this.paramsNumber+" attendus, "+(method.size()-2)+" reçu)");
+			return null;
+		}
+		
+		LinkedHashMap<String,String> param_Value = new LinkedHashMap<>();
+		
+		param_Value.put(this.script.get(0).get(0).contents(), this.self);
+		
+		if(method.size()>2) {
+			int i = 2;
+			
+			for(SNode node : this.script.get(0).children().subList(1, this.script.get(0).size())) {
+				param_Value.put(node.contents(), method.get(i).contents());
+				i++;
+			}
+		}
+		
+		
+		SNode rootCopy = new SDefaultNode();
+		this.copyTree(this.script, rootCopy,param_Value);
+		List<SNode> copy = rootCopy.children().subList(1, rootCopy.size());
+		
+		
+		Iterator<SNode> iterator = copy.iterator();
+		
+		while(iterator.hasNext()) {
+			new Interpreter().compute(Exercice6_0.environment, iterator.next());
+		}
+		
+		
+		return null;
+	}
+	
+}
 
 class Sleep implements Command{
 
@@ -628,29 +613,23 @@ class DelElement implements Command{
 
 class AddScript implements Command{
 
-
 	@Override
 	public Reference run(Reference receiver, SNode method) {
+		String scriptName = method.get(2).contents();
+		String receiverName = method.get(0).contents();
 		
-		List<String> param = new ArrayList<>();
-		
-		for(SNode node : method.get(3).get(0).children().subList(1, method.get(3).get(0).children().size())) {
-			param.add(node.contents());
+		if(receiver.getCommandByName(scriptName)!=null) {
+			System.err.println("Impossible d'ajouter un script avec le nom \""+ scriptName+"\" car "+receiverName+" possède déjà une commande ou un script avec ce nom");
+			return null;
 		}
 		
-		List<SNode> script = new ArrayList<>();
-		
-		for(SNode node : method.get(3).children().subList(1, method.get(3).children().size())) {
-			script.add(node);
-		}
-		
-		receiver.addScript(method.get(0).contents(), method.get(2).contents(),script, param);
+		receiver.addCommand(scriptName, new Script(receiverName,method.get(3)));
 		return null;
 	}
 	
-	
-	
 }
+
+
 
 
 
