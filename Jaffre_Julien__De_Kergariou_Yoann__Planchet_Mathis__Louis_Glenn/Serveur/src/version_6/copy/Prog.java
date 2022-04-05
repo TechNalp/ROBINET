@@ -15,17 +15,18 @@ public class Prog {
 
 		try {
 			serveurFTP = new ServerSocket(8000);
+			//boucle multi-threading
 			while(r) {
 				try {
 					Socket socket = serveurFTP.accept();
 					Serveur sct = new Serveur(socket);
 					Thread th =new Thread(sct);
+					//lancement d'un thread par client connecté
 					th.start();
 				}catch(java.net.SocketException e) {System.out.println("bye");}
 			}
 			serveurFTP.close(); 
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			
 			e.printStackTrace();
 		}
