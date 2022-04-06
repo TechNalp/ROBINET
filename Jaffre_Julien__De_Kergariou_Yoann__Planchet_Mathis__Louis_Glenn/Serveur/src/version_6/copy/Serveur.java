@@ -1,20 +1,26 @@
 package version_6.copy;
 
 import java.awt.Dimension;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+
+import javax.imageio.ImageIO;
 
 import graphicLayer.GImage;
 import graphicLayer.GOval;
@@ -50,50 +56,34 @@ public class Serveur implements Runnable{
 		}
 
 
-		//socket transfert copie d'écran
+		//socket transfert copie d'écran début
 		ServerSocket s2=new ServerSocket(4000);
-	
 		Socket client=s2.accept();
-	
-		File f = new File(this.getClass().getResource("indehx.jpg").getPath());
+		OutputStream outputStream=client.getOutputStream();
+		while(true) {
+			BufferedImage image = ImageIO.read(new File("./indehx.jpg"));
 
-		int t=256,x;
-		byte[] buff = new byte[t];
+			ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+			ImageIO.write(image, "jpg", byteArrayOutputStream);
 
-		BufferedInputStream br2= new BufferedInputStream(new FileInputStream(f));
-		PrintStream ps2 = new PrintStream(client.getOutputStream());
-	System.out.println((int) f.length());
-	ps.println(f.length());
-		//lecture de l'image et envoie des bytes sur la deuxième socket
-		while ((x = br2.read(buff))>-1) {
-			ps2.write(buff,0,x);
-		
+			byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array();
+			outputStream.write(size);
+			outputStream.write(byteArrayOutputStream.toByteArray());
+			outputStream.flush();
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
+		//fin
 	
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
-		/*
-		File f2 = new File(this.getClass().getResource("ixchel.jpg").getPath());
-		ps = new PrintStream(client.getOutputStream());
-		BufferedInputStream br3= new BufferedInputStream(new FileInputStream(f2));
-	
-		while ((x = br3.read(buff)) != -1) {
-			System.out.println(x+"l");
-			ps.write(buff,0,x);
-		}
-		ps.close();
-	//	br3.close();
-		*/
-	
 	}
 	@Override
 	public void run() {
-		
+
 		Environment environment=new Environment(ps);
 		space = new GSpace("Serveur", new Dimension(200, 100));
 		space.open();
@@ -129,7 +119,7 @@ public class Serveur implements Runnable{
 
 		while (true) {
 			// prompt
-			
+
 			try {
 				//attente script
 				script = br.readLine();	
@@ -156,6 +146,14 @@ public class Serveur implements Runnable{
 			}catch(IOException e) {break;}//fermeture brusque socket
 		}
 		System.out.println("client partie");
+		try {
+			sock.close();
+			br.close();
+			ps.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	public class Interpreter{
 		public void compute(Environment env, SNode method) {
