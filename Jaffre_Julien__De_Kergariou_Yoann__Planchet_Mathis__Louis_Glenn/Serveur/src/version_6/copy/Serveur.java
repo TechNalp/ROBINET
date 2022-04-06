@@ -29,6 +29,7 @@ import graphicLayer.GSpace;
 import graphicLayer.GString;
 import stree.parser.SNode;
 import stree.parser.SParser;
+import stree.parser.SPrinter;
 import tools.Tools;
 
 public class Serveur implements Runnable{
@@ -57,7 +58,7 @@ public class Serveur implements Runnable{
 
 
 		//socket transfert copie d'écran début +test
-	/*	ServerSocket s2=new ServerSocket(4000);
+		/*	ServerSocket s2=new ServerSocket(4000);
 		Socket client=s2.accept();
 		OutputStream outputStream=client.getOutputStream();
 		while(true) {
@@ -78,7 +79,7 @@ public class Serveur implements Runnable{
 			}
 		}
 		//fin
-	*/
+		 */
 
 	}
 	@Override
@@ -123,15 +124,20 @@ public class Serveur implements Runnable{
 			try {
 				//attente script
 				script = br.readLine();	
+				//	System.out.println(script);
+
 				ps.println("Script bien recu !");
 				stop=false;
 				SParser<SNode> parser = new SParser<>();
 				List<SNode> rootNodes = null;
 				rootNodes = parser.parse(script);
+
 				Iterator<SNode> itor = rootNodes.iterator();
-				ps.println("script validide");
+
 				sc=new Thread(new ThEcouteStop(sock,Thread.currentThread()));
 				sc.start();
+				ps.println("script valide");
+				
 				while (itor.hasNext()&& !stop)  {
 					new Interpreter().compute(envs.get(Thread.currentThread().getName()), itor.next());
 				}
@@ -142,8 +148,9 @@ public class Serveur implements Runnable{
 			}catch(stree.parser.SSyntaxError e) {
 				//erreur de parsing
 				ps.println("S expression invalide");
-			}catch(java.net.SocketException e) {System.out.println("lo");break;
-			}catch(IOException e) {break;}//fermeture brusque socket
+				ps.println("fin");
+			}catch(java.net.SocketException e) {System.out.println("socket"); break;
+			}catch(IOException e) {System.out.println("socket"); break;}//fermeture brusque socket
 		}
 		System.out.println("client partie");
 		try {
@@ -161,14 +168,18 @@ public class Serveur implements Runnable{
 		public void compute(Environment env, SNode method) {
 			String receiverName = method.get(0).contents();
 			Reference receiver = env.getReferenceByName(receiverName);
+			SPrinter printer = new SPrinter();
+			method.accept(printer);
 			if(receiver != null) {
 				try {
 					receiver.run(method);
+					ps.println("good: "+printer.result().toString());
 				}catch(InterruptedException e) {
 					stop=true;
 					ps.println("interrompue");
 				}catch(Exception e) {
-					e.printStackTrace();
+					//e.printStackTrace();
+					ps.println("error command: "+printer.result().toString());
 				}
 			}
 		}

@@ -29,11 +29,11 @@ import javafx.scene.image.ImageView;
 public class MonControleur implements Initializable {
 	//socket de 
 	protected Socket sock;
-	//
+	//envoie du script
 	protected PrintStream ps ;
 	//lecture des log
 	protected BufferedReader  br ;
-	
+	boolean connecte=false;
 	boolean lancer_script=false;
 	@FXML
 	private TextField adresse ;
@@ -55,7 +55,7 @@ public class MonControleur implements Initializable {
 	private ImageView image;
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
-
+	
 		//			image.setImage(new Image(new FileInputStream(this.getClass().getResource("rd.png").getPath())));
 
 
@@ -83,6 +83,7 @@ public class MonControleur implements Initializable {
 			//	BufferedWriter be =new BufferedWriter(new OutputStreamWriter(sock.getOutputStream()));
 			ps = new PrintStream(sock.getOutputStream());
 			log.appendText("connexion réussite\n");
+			connecte=true;
 		}catch(java.net.ConnectException e) {			
 			log.appendText("**le serveur n'est pas allumé**\n");
 
@@ -104,7 +105,6 @@ public class MonControleur implements Initializable {
 	public void envoie_script() {
 
 		Runnable task=()->{
-		//	log.appendText("script envoye lancer");
 			String scrip=script.getText();
 			ps.println(scrip);
 			String logmes="";
@@ -132,7 +132,7 @@ public class MonControleur implements Initializable {
 			}catch(IOException e) {	e.printStackTrace();}
 		};
 		//test script en cours
-		if(lancer_script==false)
+		if(lancer_script==false && connecte==true)
 			new Thread(task).start();
 		
 	}

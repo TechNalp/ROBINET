@@ -20,7 +20,7 @@ public class prog {
 						Serveur sct = new Serveur(socket);
 						Thread th =new Thread(sct);
 						th.start();
-						}catch(java.net.SocketException e) {System.out.println("bye");}
+						}catch(java.net.SocketException e) {System.out.println("Client partie");}
 					}
 					serveurFTP.close(); 
 				} catch (IOException e) {

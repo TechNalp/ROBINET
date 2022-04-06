@@ -23,7 +23,7 @@ public class Prog {
 					Thread th =new Thread(sct);
 					//lancement d'un thread par client connecté
 					th.start();
-				}catch(java.net.SocketException e) {System.out.println("bye");}
+				}catch(java.net.SocketException e) {System.out.println("client partie");}
 			}
 			serveurFTP.close(); 
 		} catch (IOException e) {

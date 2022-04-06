@@ -16,7 +16,7 @@ public class Environment {
 			this.variables.put(name, ref);
 			return true;
 		}else{
-			ps.println("La rï¿½fï¿½rence "+name+" existe dï¿½jï¿½");
+			ps.println("La référence "+name+" existe déjà");
 			return false;
 		}
 	}
