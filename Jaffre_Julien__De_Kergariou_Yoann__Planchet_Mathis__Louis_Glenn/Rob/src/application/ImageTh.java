@@ -40,10 +40,8 @@ public class ImageTh implements Runnable {
 	ImageView imge;
 	int port;
 	Socket sock;
-	private static final int[] RGB_MASKS = {0xFF0000, 0xFF00, 0xFF};
-	private static final ColorModel RGB_OPAQUE =
-			new DirectColorModel(32, RGB_MASKS[0], RGB_MASKS[1], RGB_MASKS[2]);
-	public ImageTh(String adr,int port,ImageView img,BufferedReader br1){
+
+	public ImageTh(String adr,int port,ImageView img){
 		try {
 			this.sock=new Socket(adr,port);
 		} catch (IOException e) {
@@ -51,7 +49,7 @@ public class ImageTh implements Runnable {
 			e.printStackTrace();
 		}
 		this.imge=img;
-		this.br1=br1;
+	
 	}
 	@Override
 	public void run() {

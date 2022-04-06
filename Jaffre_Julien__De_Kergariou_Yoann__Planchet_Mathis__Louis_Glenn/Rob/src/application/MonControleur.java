@@ -93,9 +93,9 @@ public class MonControleur implements Initializable {
 		}
 		//test image
 
-		ImageTh imgview=new ImageTh(adr,4000,image,br);
-		Thread th=new Thread(imgview);
-		th.start();
+	//	ImageTh imgview=new ImageTh(adr,4000,image);
+	//	Thread th=new Thread(imgview);
+	//	th.start();
 
 
 
@@ -104,7 +104,7 @@ public class MonControleur implements Initializable {
 	public void envoie_script() {
 
 		Runnable task=()->{
-			System.out.println("lancer");
+		//	log.appendText("script envoye lancer");
 			String scrip=script.getText();
 			ps.println(scrip);
 			String logmes="";
@@ -118,25 +118,23 @@ public class MonControleur implements Initializable {
 				//fin normale fermeture socket d'interruption
 				if(logmes.equals("fin"))ps.println("");
 				lancer_script=false;
-				try {
+			/*	try { trop de réponse de la part du serveur = crash du textarea
 					Thread.sleep(2000);
 					log.clear();
 				} catch (InterruptedException e) {
 					e.printStackTrace();
-				}
+				}*/
 
 
 			}catch(java.net.SocketException e) {
-				lancer_script=false;
-				System.out.print("tache interrompue");
+				lancer_script=true;
+				log.appendText("déconnexion de la part du serveur");
 			}catch(IOException e) {	e.printStackTrace();}
 		};
 		//test script en cours
 		if(lancer_script==false)
 			new Thread(task).start();
-		else {
-			System.out.print("script en cours");
-		}
+		
 	}
 	//bouton stop
 	public void stop_script() {

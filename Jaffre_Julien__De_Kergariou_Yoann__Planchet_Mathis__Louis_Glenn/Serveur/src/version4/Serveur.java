@@ -9,8 +9,7 @@ import java.net.Socket;
 import java.util.Iterator;
 import java.util.List;
 
-import exercice4.Environment2;
-import exercice4.Exercice4_1_0.Environment;
+
 import graphicLayer.GRect;
 import graphicLayer.GSpace;
 import stree.parser.SNode;
@@ -21,7 +20,7 @@ import version_ex3.Serveur.Command;
 public class Serveur {
 	GSpace space = new GSpace("Serveur", new Dimension(200, 100));
 	GRect robi = new GRect();
-	Environment2 environment = new Environment2();
+	exercice4.Environment environment = new exercice4.Environment();
 	static String script = "";
 	private Socket sock;
 	BufferedReader br;
@@ -56,7 +55,7 @@ public class Serveur {
 			rootNodes = parser.parse(script);
 			Iterator<SNode> itor = rootNodes.iterator();
 			while (itor.hasNext() ) {
-				this.run2(itor.next());
+			//	this.run2(itor.next());
 			}
 			System.out.print("yo");
 			ps.println("fin");

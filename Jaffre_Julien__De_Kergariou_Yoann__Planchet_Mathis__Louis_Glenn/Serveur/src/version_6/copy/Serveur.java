@@ -56,8 +56,8 @@ public class Serveur implements Runnable{
 		}
 
 
-		//socket transfert copie d'écran début
-		ServerSocket s2=new ServerSocket(4000);
+		//socket transfert copie d'écran début +test
+	/*	ServerSocket s2=new ServerSocket(4000);
 		Socket client=s2.accept();
 		OutputStream outputStream=client.getOutputStream();
 		while(true) {
@@ -78,7 +78,7 @@ public class Serveur implements Runnable{
 			}
 		}
 		//fin
-	
+	*/
 
 	}
 	@Override
@@ -115,7 +115,7 @@ public class Serveur implements Runnable{
 
 
 
-
+		Thread sc=null;
 
 		while (true) {
 			// prompt
@@ -130,7 +130,7 @@ public class Serveur implements Runnable{
 				rootNodes = parser.parse(script);
 				Iterator<SNode> itor = rootNodes.iterator();
 				ps.println("script validide");
-				Thread sc=new Thread(new ThEcouteStop(sock,Thread.currentThread()));
+				sc=new Thread(new ThEcouteStop(sock,Thread.currentThread()));
 				sc.start();
 				while (itor.hasNext()&& !stop)  {
 					new Interpreter().compute(envs.get(Thread.currentThread().getName()), itor.next());
@@ -147,6 +147,7 @@ public class Serveur implements Runnable{
 		}
 		System.out.println("client partie");
 		try {
+			sc.interrupt();
 			sock.close();
 			br.close();
 			ps.close();
@@ -156,6 +157,7 @@ public class Serveur implements Runnable{
 		}
 	}
 	public class Interpreter{
+		//copie
 		public void compute(Environment env, SNode method) {
 			String receiverName = method.get(0).contents();
 			Reference receiver = env.getReferenceByName(receiverName);
