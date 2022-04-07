@@ -48,28 +48,12 @@ public class MonControleur implements Initializable {
 	@FXML
 	private Button stop;
 	@FXML
-	private Button log_rec;
-	@FXML
 	private TextArea log;
 	@FXML
 	private ImageView image;
 	@Override
 	public void initialize(URL location, ResourceBundle resources) {
 	
-		//			image.setImage(new Image(new FileInputStream(this.getClass().getResource("rd.png").getPath())));
-
-
-	/*	File f=new File("./image.jpg");
-		if(f.exists()) {
-			try {
-
-				if(f.canRead())System.out.print("lol");
-				image.setImage(new Image(new FileInputStream(new File("./image.jpg"))));
-			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		}*/
 	}
 	//bouton connec,connexion avec un port et une adresse
 	@FXML
@@ -94,9 +78,9 @@ public class MonControleur implements Initializable {
 		}
 		//test image
 
-	//	ImageTh imgview=new ImageTh(adr,4000,image);
-	//	Thread th=new Thread(imgview);
-	//	th.start();
+		ImageTh imgview=new ImageTh(adr,4000,image);
+		Thread th=new Thread(imgview);
+		th.start();
 
 
 

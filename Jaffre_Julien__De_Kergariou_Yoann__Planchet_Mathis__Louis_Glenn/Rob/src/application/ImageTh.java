@@ -32,7 +32,8 @@ import javax.imageio.ImageIO;
 import javafx.embed.swing.SwingFXUtils;
 
 import javafx.scene.image.ImageView;
-
+//thread qui s'occupe de recevoir les capture d'écrans du serveur
+//et de les afficher
 public class ImageTh implements Runnable {
 	BufferedInputStream br;
 	BufferedInputStream bw;
@@ -67,11 +68,11 @@ public class ImageTh implements Runnable {
 				byte[] imageAr = new byte[size];
 				//lecture image
 				inputStream.read(imageAr);
-
+				
 				BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageAr));
 				ImageIO.write(image, "jpg", new File("./tmp.jpg"));
 				imge.setImage(new javafx.scene.image.Image(new FileInputStream(new File("./tmp.jpg"))));
-
+				
 			}
 
 
