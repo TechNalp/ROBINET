@@ -1,7 +1,8 @@
 package version_6.copy;
 
 import stree.parser.SNode;
+import version_6.copy.Sleep.StopException;
 
-interface Command {
-	abstract public Reference run(Reference receiver, SNode method)throws Exception;
+public interface Command {
+	abstract public Reference run(Reference receiver, SNode method) throws StopException;
 }

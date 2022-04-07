@@ -1,7 +1,5 @@
 package version_6.copy;
 
-import java.util.HashSet;
-import java.util.Set;
 
 import graphicLayer.GContainer;
 import graphicLayer.GElement;
@@ -10,7 +8,7 @@ import stree.parser.SNode;
 public class DelElement implements Command{
 	
 	Environment env;
-	
+
 	public DelElement(Environment env) {
 		this.env = env;
 	}
@@ -20,10 +18,20 @@ public class DelElement implements Command{
 		String nameRefToDel = method.get(2).contents();
 		
 		Reference ref = this.env.getReferenceByName(nameRefToDel);
+		Boolean useOfGlobalEnv = false;
+		
 		if(ref == null) {
-			return null;
+			ref = receiver.getGlobalEnv().getReferenceByName(nameRefToDel);
+			if(ref == null) {
+				receiver.hisEnv.ps.println(nameRefToDel + "n'existe pas ou ne peut-être supprimé depuis cet élément");
+				return null;
+			}
+			useOfGlobalEnv = true;
 		}
 		
+		ref.getHisEnv().setDadEnv(null);
+		
+		ref.setHisEnv(null);
 		
 		
 		if(receiver.getReceiver() instanceof GContainer) {
@@ -31,18 +39,13 @@ public class DelElement implements Command{
 			((GContainer)(receiver.getReceiver())).repaint();
 		}
 		
-		Set<String> toDelete = new HashSet<>();
-		for (String s : this.env.variables.keySet()) {
-			if(s.startsWith(nameRefToDel)) {
-				toDelete.add(s);
-			}
-		}
 		
-		for(String s : toDelete) {
-			this.env.removeReference(s);
+		if(!useOfGlobalEnv) {
+			this.env.removeReference(nameRefToDel);
+		}else {
+			String[] path = nameRefToDel.split("\\.");
+			this.env.removeReference(path[path.length-1]);
 		}
-		
-		toDelete.clear();
 		
 		return null;
 	}

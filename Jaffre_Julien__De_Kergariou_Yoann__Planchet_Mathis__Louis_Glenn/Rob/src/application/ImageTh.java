@@ -24,12 +24,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
 import javax.imageio.ImageIO;
 
-import javafx.embed.swing.SwingFXUtils;
+
 
 import javafx.scene.image.ImageView;
 
@@ -60,23 +61,45 @@ public class ImageTh implements Runnable {
 			byte[] sizeAr = new byte[4];
 			while(true) {
 				//lecture taille image
-				inputStream.read(sizeAr);
+				this.sock.setSoTimeout(1000);
+				try {
+					inputStream.read(sizeAr);
+				}catch (java.net.SocketTimeoutException e){
+					if(Thread.currentThread().isInterrupted()){
+						this.sock.close();
+						return;
+					}
+					continue;
+				}
 				//conversion
 				int size = ByteBuffer.wrap(sizeAr).asIntBuffer().get();
 
 				byte[] imageAr = new byte[size];
 				//lecture image
-				inputStream.read(imageAr);
+				while(true) {
+					try {
+						inputStream.read(imageAr);
+					} catch (java.net.SocketTimeoutException e) {
+						if(Thread.currentThread().isInterrupted()){
+							this.sock.close();
+							return;
+						}
+						continue;
+					}
+					break;
+				}
 
 				BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageAr));
-				ImageIO.write(image, "jpg", new File("./tmp.jpg"));
-				imge.setImage(new javafx.scene.image.Image(new FileInputStream(new File("./tmp.jpg"))));
+				ImageIO.write(image, "png", new File("./tmp.png"));
+				imge.setImage(new javafx.scene.image.Image(new FileInputStream(new File("./tmp.png"))));
 
 			}
 
 
 
 
+		}catch (SocketException e){
+			return;
 		}catch(IOException e) {e.printStackTrace();}
 
 	}

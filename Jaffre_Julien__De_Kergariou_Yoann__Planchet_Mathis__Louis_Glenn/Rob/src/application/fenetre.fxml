@@ -1,20 +1,49 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.MonControleur">
    <children>
-      <TextField fx:id="adresse" layoutX="29.0" layoutY="24.0" prefHeight="25.0" prefWidth="152.0" promptText="adresse" text="localhost" />
-      <TextField fx:id="port" layoutX="218.0" layoutY="24.0" prefHeight="25.0" prefWidth="111.0" promptText="port" text="8000" />
-      <Button fx:id="send" layoutX="35.0" layoutY="146.0" mnemonicParsing="false" onAction="#envoie_script" text="send" />
-      <Button fx:id="connec" layoutX="438.0" layoutY="24.0" mnemonicParsing="false" onAction="#connection" text="connec" />
-      <TextField fx:id="script" layoutX="31.0" layoutY="93.0" prefHeight="38.0" prefWidth="566.0" text="(space setColor black) (robi setColor yellow) (space sleep 10000)  (space setColor red)" />
-      <Button fx:id="stop" layoutX="105.0" layoutY="146.0" mnemonicParsing="false" onAction="#stop_script" text="stop" />
-      <TextArea fx:id="log" layoutX="29.0" layoutY="241.0" prefHeight="136.0" prefWidth="287.0" />
-      <ImageView fx:id="image" fitHeight="150.0" fitWidth="200.0" layoutX="359.0" layoutY="227.0" pickOnBounds="true" preserveRatio="true" />
+      <Pane id="color_bar" layoutX="17.0" layoutY="23.0" prefHeight="38.0" prefWidth="606.0" stylesheets="@application.css" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="23.0">
+         <children>
+            <TextField fx:id="adresse" layoutX="24.0" layoutY="7.0" prefHeight="25.0" prefWidth="107.0" promptText="adresse" text="localhost" />
+            <TextField fx:id="port" layoutX="142.0" layoutY="7.0" prefHeight="25.0" prefWidth="63.0" promptText="port" text="8000" />
+            <Button fx:id="connec" layoutX="215.0" layoutY="5.0" mnemonicParsing="false" onAction="#connection" text="Connection" />
+         </children>
+      </Pane>
+      <Button id="send_button" fx:id="send" layoutX="18.0" layoutY="133.0" mnemonicParsing="false" onAction="#envoie_script" prefHeight="25.0" prefWidth="69.0" stylesheets="@application.css" text="SEND" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="133.0" />
+      <TextField fx:id="script" layoutX="17.0" layoutY="81.0" prefHeight="38.0" prefWidth="566.0" AnchorPane.leftAnchor="17.0" AnchorPane.rightAnchor="17.0" />
+      <Button id="stop_button" fx:id="stop" layoutX="100.0" layoutY="133.0" mnemonicParsing="false" onAction="#stop_script" prefHeight="25.0" prefWidth="49.0" stylesheets="@application.css" text="STOP" AnchorPane.leftAnchor="100.0" AnchorPane.topAnchor="133.0" />
+      <AnchorPane layoutX="14.0" layoutY="196.0" AnchorPane.bottomAnchor="14.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="180.0">
+         <children>
+            <AnchorPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="14.0" AnchorPane.rightAnchor="314.0" AnchorPane.topAnchor="0.0">
+               <children>
+                  <TextArea fx:id="log" layoutY="20.0" prefHeight="161.0" prefWidth="272.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0" />
+                  <Label layoutX="1.0" text="LOG" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
+            <AnchorPane layoutX="306.0" prefHeight="177.0" prefWidth="287.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="314.0" AnchorPane.rightAnchor="14.0" AnchorPane.topAnchor="0.0">
+               <children>
+                  <ImageView fx:id="image" fitHeight="186.0" fitWidth="272.0" layoutY="20.0" pickOnBounds="true" preserveRatio="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="20.0" />
+                  <Label layoutX="1.0" text="RÉSULTAT" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+            </AnchorPane>
+         </children>
+      </AnchorPane>
    </children>
 </AnchorPane>

@@ -1,1 +1,56 @@
 /* JavaFX CSS - Leave this comment until you have at least create one rule which uses -fx-Property */
+
+#color_bar{
+    -fx-background-color: linear-gradient(from 25% 25% to 100% 100%, #7cc7e1, #32b1cd);
+}
+
+.button{
+    -fx-background-color: #ffffff;
+    -fx-border-radius: 0;
+    -fx-background-insets: 0 0 0 0,0,0;
+    -fx-border-color: #355cab;
+    -fx-border-width: 1.75;
+}
+
+.button:hover, .button:focused{
+    -fx-background-color: rgb(235, 242, 255);
+    -fx-border-width: 1.5;
+}
+
+.button:hover{
+    -fx-background-color: rgb(213, 228, 255);
+}
+
+.button:pressed{
+    -fx-background-color: rgb(195, 217, 230);
+    -fx-border-width: 1.5;
+
+}
+
+#stop_button{
+    -fx-background-color: #ff5454;
+    -fx-border-width: 0;
+    -fx-font-weight: bold;
+    -fx-text-fill: #8f3030;
+}
+
+#stop_button:hover{
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+    -fx-text-fill: #ff5454;
+    -fx-background-color: #8f3030;
+}
+
+#send_button{
+    -fx-background-color: #5be577;
+    -fx-border-width: 0;
+    -fx-font-weight: bold;
+    -fx-text-fill: #308f59;
+}
+
+#send_button:hover{
+    -fx-scale-x: 1.2;
+    -fx-scale-y: 1.2;
+    -fx-text-fill: #5be577;
+    -fx-background-color: #308f59;
+}

@@ -1,5 +1,6 @@
 package version_6.copy;
 
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 
 import graphicLayer.GString;
@@ -7,6 +8,7 @@ import stree.parser.SNode;
 
 public class NewString implements Command{
 
+	
 	@Override
 	public Reference run(Reference reference, SNode method) {
 		try {
@@ -18,8 +20,13 @@ public class NewString implements Command{
 			}
 			s.setString(str);
 			Reference ref = new Reference(s);
+			
+			ref.setHisEnv(new Environment(null,reference.hisEnv.ps));
+			
 			ref.addCommand("translate", new Translate());
 			ref.addCommand("setColor", new SetColor());
+			
+			ref.addCommand("addScript", new AddScript());
 			
 			return ref;
 			

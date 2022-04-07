@@ -25,7 +25,7 @@ public class ThEcouteStop implements Runnable {
 			br = new BufferedReader(new InputStreamReader(so.getInputStream()));
 		
 			String s=br.readLine();
-			System.out.println(s);
+			//System.out.println(s);
 			if(s.equals("stop")) {
 		//		ps.println("interrompue");
 				thread.interrupt();
@@ -34,8 +34,8 @@ public class ThEcouteStop implements Runnable {
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}catch(InterruptedException e) {System.out.print("truc");}
+			System.out.println("Client "+this.thread.getName()+" déconnecté -> arrêt Thread écoute Stop");
+		}catch(InterruptedException e) {e.printStackTrace();}
 		
 	}
 
