@@ -33,6 +33,7 @@ public class MonControleur implements Initializable {
 	protected PrintStream ps ;
 	//lecture des log
 	protected BufferedReader  br ;
+	int portimage;
 	boolean connecte=false;
 	boolean lancer_script=false;
 	@FXML
@@ -68,6 +69,7 @@ public class MonControleur implements Initializable {
 			ps = new PrintStream(sock.getOutputStream());
 			log.appendText("connexion réussite\n");
 			connecte=true;
+			portimage=Integer.parseInt(br.readLine());
 		}catch(java.net.ConnectException e) {			
 			log.appendText("**le serveur n'est pas allumé**\n");
 
@@ -78,7 +80,7 @@ public class MonControleur implements Initializable {
 		}
 		//test image
 
-		ImageTh imgview=new ImageTh(adr,4000,image);
+		ImageTh imgview=new ImageTh(adr,portimage,image);
 		Thread th=new Thread(imgview);
 		th.start();
 

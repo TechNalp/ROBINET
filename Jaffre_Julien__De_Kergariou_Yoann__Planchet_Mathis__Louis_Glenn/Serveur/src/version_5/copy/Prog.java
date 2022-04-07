@@ -23,7 +23,7 @@ public class Prog {
 					Thread th =new Thread(sct);
 					//lancement d'un thread par client connecté
 					th.start();
-					windw+=230;
+					//windw+=230;
 				
 				}catch(java.net.SocketException e) {System.out.println("client partie");}
 			}

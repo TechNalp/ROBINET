@@ -47,6 +47,7 @@ public class Serveur implements Runnable{
 	BufferedReader br;
 	PrintStream ps;
 	String script;
+	static int portimage=4000;
 	boolean stop=false;
 	@SuppressWarnings("resource")
 	public Serveur(Socket socket,int x,int y) throws IOException {
@@ -74,7 +75,7 @@ public class Serveur implements Runnable{
 	//}
 	@Override
 	public void run() {
-
+		ps.println(portimage);
 		Environment environment=new Environment(ps);
 		space = new GSpace("Serveur", new Dimension(200, 100));
 
@@ -111,9 +112,13 @@ public class Serveur implements Runnable{
 		Robot robot=null;
 		OutputStream outputStream=null;
 		try {
-			ServerSocket s2 = new ServerSocket(4000);
-			Socket client=s2.accept();
-			outputStream=client.getOutputStream();
+	
+			ServerSocket s2 = new ServerSocket(portimage);
+			//section critique
+			synchronized(this) {portimage++;}
+			//socket transfer image
+			Socket simg=s2.accept();
+			outputStream=simg.getOutputStream();
 			
 
 			robot = new Robot();
@@ -183,6 +188,7 @@ public class Serveur implements Runnable{
 			//si le client quitte avant d'envoyer le script erreur null.start
 			if(sc!=null)
 				sc.interrupt();
+			
 			sock.close();
 			br.close();
 			ps.close();
